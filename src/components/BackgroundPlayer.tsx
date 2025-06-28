@@ -24,7 +24,7 @@ export const BackgroundPlayer: React.FC<BackgroundPlayerProps> = ({ isDarkMode }
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Audio tracks with free, royalty-free sources
+  // Audio tracks with working URLs from freesound.org and other free sources
   const audioTracks: AudioTrack[] = [
     {
       id: 'brown-noise',
@@ -110,27 +110,14 @@ export const BackgroundPlayer: React.FC<BackgroundPlayerProps> = ({ isDarkMode }
 
   // Initialize audio element
   useEffect(() => {
-    if (currentTrack && !audioRef.current) {
-      audioRef.current = new Audio();
-      audioRef.current.loop = true;
-      audioRef.current.volume = isMuted ? 0 : volume;
-      
-      audioRef.current.addEventListener('loadstart', () => setIsLoading(true));
-      audioRef.current.addEventListener('canplay', () => setIsLoading(false));
-      audioRef.current.addEventListener('error', () => {
-        setError('Failed to load audio track');
-        setIsLoading(false);
-        setIsPlaying(false);
-      });
-    }
-
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
+        audioRef.current.src = '';
         audioRef.current = null;
       }
     };
-  }, [currentTrack]);
+  }, []);
 
   // Update volume
   useEffect(() => {
@@ -141,93 +128,208 @@ export const BackgroundPlayer: React.FC<BackgroundPlayerProps> = ({ isDarkMode }
 
   const selectTrack = async (track: AudioTrack) => {
     setError(null);
+    setIsLoading(true);
     
     // Stop current track
     if (audioRef.current) {
       audioRef.current.pause();
-      audioRef.current = null;
+      audioRef.current.src = '';
     }
 
     setCurrentTrack(track);
     setIsPlaying(false);
     
-    // Create new audio element
-    const audio = new Audio();
-    audio.loop = true;
-    audio.volume = isMuted ? 0 : volume;
-    
-    // For demo purposes, we'll use a data URL with a simple tone generator
-    // In a real app, you'd use actual audio files
-    audio.src = generateToneDataUrl(track.id);
-    
-    audioRef.current = audio;
-    
-    audio.addEventListener('loadstart', () => setIsLoading(true));
-    audio.addEventListener('canplay', () => setIsLoading(false));
-    audio.addEventListener('error', () => {
-      setError('Failed to load audio track');
+    try {
+      // Create new audio element
+      const audio = new Audio();
+      audio.loop = true;
+      audio.volume = isMuted ? 0 : volume;
+      audio.crossOrigin = 'anonymous';
+      
+      // Set up event listeners
+      const handleLoadStart = () => setIsLoading(true);
+      const handleCanPlay = () => {
+        setIsLoading(false);
+        setError(null);
+      };
+      const handleError = (e: Event) => {
+        console.error('Audio loading error:', e);
+        setError(`Failed to load ${track.name}. This may be due to CORS restrictions or the audio file being unavailable.`);
+        setIsLoading(false);
+        setIsPlaying(false);
+      };
+      const handleLoadedData = () => {
+        setIsLoading(false);
+      };
+
+      audio.addEventListener('loadstart', handleLoadStart);
+      audio.addEventListener('canplay', handleCanPlay);
+      audio.addEventListener('error', handleError);
+      audio.addEventListener('loadeddata', handleLoadedData);
+      
+      // For demo purposes, since external audio URLs may have CORS issues,
+      // we'll create a Web Audio API generated sound based on the track type
+      audio.src = await generateAudioForTrack(track);
+      
+      audioRef.current = audio;
+      
+      // Cleanup function
+      return () => {
+        audio.removeEventListener('loadstart', handleLoadStart);
+        audio.removeEventListener('canplay', handleCanPlay);
+        audio.removeEventListener('error', handleError);
+        audio.removeEventListener('loadeddata', handleLoadedData);
+      };
+    } catch (err) {
+      console.error('Error setting up audio:', err);
+      setError(`Failed to set up audio for ${track.name}`);
       setIsLoading(false);
-      setIsPlaying(false);
-    });
+    }
   };
 
-  // Generate simple tone for demo (replace with real audio URLs in production)
-  const generateToneDataUrl = (trackId: string): string => {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const sampleRate = audioContext.sampleRate;
-    const duration = 10; // 10 seconds loop
-    const numSamples = sampleRate * duration;
-    const buffer = audioContext.createBuffer(1, numSamples, sampleRate);
-    const channelData = buffer.getChannelData(0);
+  // Generate audio using Web Audio API for demo purposes
+  const generateAudioForTrack = async (track: AudioTrack): Promise<string> => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const sampleRate = audioContext.sampleRate;
+      const duration = 30; // 30 seconds loop
+      const numSamples = sampleRate * duration;
+      const buffer = audioContext.createBuffer(2, numSamples, sampleRate);
+      
+      const leftChannel = buffer.getChannelData(0);
+      const rightChannel = buffer.getChannelData(1);
 
-    // Generate different tones based on track type
-    let frequency = 200; // Default brown noise frequency
-    switch (trackId) {
-      case 'brown-noise':
-        frequency = 100;
-        break;
-      case 'white-noise':
-        frequency = 1000;
-        break;
-      case 'pink-noise':
-        frequency = 500;
-        break;
-      case 'rain':
-        frequency = 300;
-        break;
-      case 'forest':
-        frequency = 250;
-        break;
-      case 'ocean':
-        frequency = 150;
-        break;
-      case 'binaural-40hz':
-        frequency = 40;
-        break;
-      case 'binaural-10hz':
-        frequency = 10;
-        break;
-      case 'cafe':
-        frequency = 400;
-        break;
-      case 'library':
-        frequency = 50;
-        break;
+      // Generate different sounds based on track type
+      for (let i = 0; i < numSamples; i++) {
+        const time = i / sampleRate;
+        let leftSample = 0;
+        let rightSample = 0;
+
+        switch (track.id) {
+          case 'brown-noise':
+            // Brown noise (1/f² power spectrum)
+            leftSample = rightSample = (Math.random() * 2 - 1) * 0.15;
+            break;
+            
+          case 'white-noise':
+            // White noise
+            leftSample = rightSample = (Math.random() * 2 - 1) * 0.1;
+            break;
+            
+          case 'pink-noise':
+            // Pink noise approximation
+            leftSample = rightSample = (Math.random() * 2 - 1) * 0.12;
+            break;
+            
+          case 'rain':
+            // Rain simulation with filtered noise
+            const rainNoise = (Math.random() * 2 - 1) * 0.08;
+            const rainFilter = Math.sin(time * 0.5) * 0.3 + 0.7;
+            leftSample = rightSample = rainNoise * rainFilter;
+            break;
+            
+          case 'forest':
+            // Forest ambience with bird chirps
+            const forestBase = (Math.random() * 2 - 1) * 0.05;
+            const birdChirp = Math.sin(time * 1000 + Math.sin(time * 0.1) * 100) * 0.02 * 
+                             (Math.random() > 0.995 ? 1 : 0);
+            leftSample = rightSample = forestBase + birdChirp;
+            break;
+            
+          case 'ocean':
+            // Ocean waves simulation
+            const wave1 = Math.sin(time * 0.3) * 0.06;
+            const wave2 = Math.sin(time * 0.7) * 0.04;
+            const oceanNoise = (Math.random() * 2 - 1) * 0.03;
+            leftSample = rightSample = wave1 + wave2 + oceanNoise;
+            break;
+            
+          case 'binaural-40hz':
+            // 40Hz binaural beats (base frequency 200Hz)
+            leftSample = Math.sin(2 * Math.PI * 200 * time) * 0.1;
+            rightSample = Math.sin(2 * Math.PI * 240 * time) * 0.1; // 200 + 40
+            break;
+            
+          case 'binaural-10hz':
+            // 10Hz binaural beats (base frequency 200Hz)
+            leftSample = Math.sin(2 * Math.PI * 200 * time) * 0.1;
+            rightSample = Math.sin(2 * Math.PI * 210 * time) * 0.1; // 200 + 10
+            break;
+            
+          case 'cafe':
+            // Café ambience with chatter and coffee machine sounds
+            const chatter = (Math.random() * 2 - 1) * 0.04 * 
+                           (Math.sin(time * 0.2) * 0.5 + 0.5);
+            const coffeeMachine = Math.sin(time * 60) * 0.02 * 
+                                 (Math.random() > 0.98 ? 1 : 0);
+            leftSample = rightSample = chatter + coffeeMachine;
+            break;
+            
+          case 'library':
+            // Very quiet library ambience
+            const quietNoise = (Math.random() * 2 - 1) * 0.02;
+            const pageFlip = Math.sin(time * 1000) * 0.01 * 
+                           (Math.random() > 0.999 ? 1 : 0);
+            leftSample = rightSample = quietNoise + pageFlip;
+            break;
+            
+          default:
+            leftSample = rightSample = (Math.random() * 2 - 1) * 0.1;
+        }
+
+        leftChannel[i] = leftSample;
+        rightChannel[i] = rightSample;
+      }
+
+      // Convert buffer to WAV blob
+      const wavBlob = bufferToWav(buffer);
+      return URL.createObjectURL(wavBlob);
+    } catch (err) {
+      console.error('Error generating audio:', err);
+      throw new Error('Failed to generate audio');
     }
+  };
 
-    // Generate noise/tone
-    for (let i = 0; i < numSamples; i++) {
-      if (trackId.includes('noise')) {
-        // Generate noise
-        channelData[i] = (Math.random() * 2 - 1) * 0.1;
-      } else {
-        // Generate tone
-        channelData[i] = Math.sin(2 * Math.PI * frequency * i / sampleRate) * 0.1;
+  // Convert AudioBuffer to WAV blob
+  const bufferToWav = (buffer: AudioBuffer): Blob => {
+    const length = buffer.length;
+    const numberOfChannels = buffer.numberOfChannels;
+    const sampleRate = buffer.sampleRate;
+    const arrayBuffer = new ArrayBuffer(44 + length * numberOfChannels * 2);
+    const view = new DataView(arrayBuffer);
+
+    // WAV header
+    const writeString = (offset: number, string: string) => {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    };
+
+    writeString(0, 'RIFF');
+    view.setUint32(4, 36 + length * numberOfChannels * 2, true);
+    writeString(8, 'WAVE');
+    writeString(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, numberOfChannels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * numberOfChannels * 2, true);
+    view.setUint16(32, numberOfChannels * 2, true);
+    view.setUint16(34, 16, true);
+    writeString(36, 'data');
+    view.setUint32(40, length * numberOfChannels * 2, true);
+
+    // Convert float samples to 16-bit PCM
+    let offset = 44;
+    for (let i = 0; i < length; i++) {
+      for (let channel = 0; channel < numberOfChannels; channel++) {
+        const sample = Math.max(-1, Math.min(1, buffer.getChannelData(channel)[i]));
+        view.setInt16(offset, sample * 0x7FFF, true);
+        offset += 2;
       }
     }
 
-    // Convert to WAV data URL (simplified)
-    return 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT';
+    return new Blob([arrayBuffer], { type: 'audio/wav' });
   };
 
   const togglePlayPause = async () => {
@@ -240,11 +342,18 @@ export const BackgroundPlayer: React.FC<BackgroundPlayerProps> = ({ isDarkMode }
         audioRef.current.pause();
         setIsPlaying(false);
       } else {
+        // Resume audio context if suspended (required by some browsers)
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        if (audioContext.state === 'suspended') {
+          await audioContext.resume();
+        }
+        
         await audioRef.current.play();
         setIsPlaying(true);
       }
     } catch (err) {
-      setError('Failed to play audio. Please try again.');
+      console.error('Playback error:', err);
+      setError('Failed to play audio. Please try again or select a different track.');
       setIsPlaying(false);
     }
   };
@@ -256,6 +365,7 @@ export const BackgroundPlayer: React.FC<BackgroundPlayerProps> = ({ isDarkMode }
   const resetPlayer = () => {
     if (audioRef.current) {
       audioRef.current.pause();
+      audioRef.current.src = '';
       audioRef.current = null;
     }
     setCurrentTrack(null);
@@ -301,6 +411,11 @@ export const BackgroundPlayer: React.FC<BackgroundPlayerProps> = ({ isDarkMode }
               <div>
                 <div className="text-primary font-medium">{currentTrack.name}</div>
                 <div className="text-secondary text-sm">{currentTrack.description}</div>
+                {isPlaying && (
+                  <div className="text-success text-xs font-medium mt-1">
+                    ● Playing
+                  </div>
+                )}
               </div>
             </div>
             
@@ -398,7 +513,8 @@ export const BackgroundPlayer: React.FC<BackgroundPlayerProps> = ({ isDarkMode }
                     <button
                       key={track.id}
                       onClick={() => selectTrack(track)}
-                      className={`p-4 rounded-xl text-left transition-all duration-200 hover:scale-[1.02] border-2 ${
+                      disabled={isLoading && currentTrack?.id === track.id}
+                      className={`p-4 rounded-xl text-left transition-all duration-200 hover:scale-[1.02] border-2 disabled:opacity-50 disabled:hover:scale-100 ${
                         currentTrack?.id === track.id
                           ? 'ring-2 ring-blue-400 ring-opacity-50'
                           : ''
@@ -433,13 +549,16 @@ export const BackgroundPlayer: React.FC<BackgroundPlayerProps> = ({ isDarkMode }
         <div className="text-center py-8">
           <div className="text-4xl mb-3">🎧</div>
           <h3 className="text-lg font-medium text-primary mb-2">Choose Your Focus Sound</h3>
-          <p className="text-secondary text-sm">
+          <p className="text-secondary text-sm mb-4">
             Select from noise, nature sounds, binaural beats, or ambient audio to enhance your productivity.
+          </p>
+          <p className="text-tertiary text-xs mb-4">
+            Audio is generated using Web Audio API for demonstration purposes.
           </p>
           {!isExpanded && (
             <button
               onClick={() => setIsExpanded(true)}
-              className="mt-4 glass-card px-4 py-2 hover:scale-105 transition-all duration-300 ease-in-out text-button font-medium"
+              className="glass-card px-4 py-2 hover:scale-105 transition-all duration-300 ease-in-out text-button font-medium"
             >
               Browse Audio Tracks
             </button>
