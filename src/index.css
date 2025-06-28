@@ -1,0 +1,399 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  }
+  
+  body {
+    @apply antialiased;
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    cursor: none; /* Hide default cursor when mouse light is active */
+  }
+
+  /* Time-related font family */
+  .font-time {
+    font-family: 'IBM Plex Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  }
+
+  /* Body text font weights */
+  .font-light {
+    font-weight: 300;
+  }
+
+  .font-normal {
+    font-weight: 400;
+  }
+
+  .font-medium {
+    font-weight: 500;
+  }
+
+  .font-semibold {
+    font-weight: 600;
+  }
+
+  .font-bold {
+    font-weight: 700;
+  }
+
+  /* Headings with Montserrat */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  /* Ensure proper line heights for readability */
+  h1 {
+    line-height: 1.2;
+    font-weight: 300;
+  }
+
+  h2 {
+    line-height: 1.3;
+    font-weight: 300;
+  }
+
+  h3 {
+    line-height: 1.4;
+    font-weight: 400;
+  }
+
+  p {
+    line-height: 1.6;
+    font-weight: 400;
+  }
+
+  /* Button text styling */
+  button {
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 500;
+    cursor: none; /* Hide cursor on buttons to show custom light */
+  }
+
+  /* Input text styling */
+  input, textarea {
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 400;
+    cursor: none; /* Hide cursor on inputs to show custom light */
+  }
+
+  /* Small text styling */
+  small, .text-sm, .text-xs {
+    font-weight: 500;
+  }
+
+  /* Restore cursor for text selection */
+  input[type="text"], 
+  input[type="email"], 
+  textarea {
+    cursor: text;
+  }
+
+  /* Restore cursor for clickable elements when needed */
+  a, 
+  button:hover, 
+  [role="button"]:hover {
+    cursor: pointer;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply backdrop-blur-[12px] rounded-2xl border shadow-lg;
+    /* Light mode: Pure white with bright blue border */
+    background: #ffffff;
+    border: 2px solid #3b82f6;
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .dark .glass-card {
+    background: rgba(17, 25, 40, 0.85);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  }
+
+  .interactive-frame {
+    position: relative;
+  }
+
+  .interactive-frame::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(45deg, transparent, rgba(59, 130, 246, 0.2), transparent);
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .dark .interactive-frame::before {
+    background: linear-gradient(45deg, transparent, rgba(20, 184, 166, 0.1), transparent);
+  }
+
+  .interactive-frame:hover::before {
+    opacity: 1;
+  }
+  
+  /* WCAG AA Compliant Text Colors - Bright Light Mode */
+  .text-primary {
+    /* Light mode: Deep black for maximum contrast */
+    color: #000000;
+    transition: color 0.3s ease-in-out;
+  }
+  
+  .dark .text-primary {
+    color: #f9fafb;
+  }
+  
+  .text-secondary {
+    /* Light mode: Dark blue for high contrast */
+    color: #1e40af;
+    transition: color 0.3s ease-in-out;
+  }
+  
+  .dark .text-secondary {
+    color: #e5e7eb;
+  }
+
+  .text-tertiary {
+    /* Light mode: Medium blue for contrast */
+    color: #2563eb;
+    transition: color 0.3s ease-in-out;
+  }
+  
+  .dark .text-tertiary {
+    color: #d1d5db;
+  }
+
+  /* Button and Interactive Element Colors */
+  .text-button {
+    /* Light mode: Pure black for buttons */
+    color: #000000;
+    transition: color 0.3s ease-in-out;
+  }
+  
+  .dark .text-button {
+    color: #f9fafb;
+  }
+
+  .text-button:hover {
+    /* Light mode: Dark blue on hover */
+    color: #1e40af;
+  }
+  
+  .dark .text-button:hover {
+    color: #ffffff;
+  }
+
+  /* Error and Success States */
+  .text-error {
+    /* Light mode: Bright red for errors */
+    color: #dc2626;
+  }
+  
+  .dark .text-error {
+    color: #f87171;
+  }
+
+  .text-success {
+    /* Light mode: Bright green for success */
+    color: #16a34a;
+  }
+  
+  .dark .text-success {
+    color: #34d399;
+  }
+
+  /* Form Input Colors */
+  .text-input {
+    /* Light mode: Pure black for input text */
+    color: #000000;
+  }
+  
+  .dark .text-input {
+    color: #f9fafb;
+  }
+
+  .text-placeholder {
+    /* Light mode: Medium blue for placeholders */
+    color: #3b82f6;
+  }
+  
+  .dark .text-placeholder {
+    color: #9ca3af;
+  }
+
+  /* Link Colors */
+  .text-link {
+    /* Light mode: Bright blue for links */
+    color: #2563eb;
+  }
+  
+  .dark .text-link {
+    color: #60a5fa;
+  }
+
+  .text-link:hover {
+    /* Light mode: Darker blue on hover */
+    color: #1d4ed8;
+  }
+  
+  .dark .text-link:hover {
+    color: #93c5fd;
+  }
+  
+  .border-primary {
+    /* Light mode: Bright blue borders */
+    border-color: #3b82f6;
+    transition: border-color 0.3s ease-in-out;
+  }
+  
+  .dark .border-primary {
+    border-color: #e5e7eb;
+  }
+}
+
+/* Mouse cursor light effect optimizations */
+@layer utilities {
+  .cursor-light-container {
+    cursor: none;
+  }
+  
+  .cursor-light-container * {
+    cursor: inherit;
+  }
+  
+  /* Restore specific cursors where needed */
+  .cursor-light-container input[type="text"],
+  .cursor-light-container input[type="email"],
+  .cursor-light-container textarea {
+    cursor: text;
+  }
+  
+  .cursor-light-container button,
+  .cursor-light-container [role="button"],
+  .cursor-light-container a {
+    cursor: pointer;
+  }
+}
+
+/* Drag and drop styles */
+[draggable="true"] {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+/* Enhanced focus styles for drag and drop accessibility */
+[draggable="true"]:focus-visible {
+  @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+}
+
+.dark [draggable="true"]:focus-visible {
+  @apply ring-blue-400 ring-offset-gray-900;
+}
+
+/* Ensure proper contrast ratios */
+@media (prefers-contrast: high) {
+  .text-primary {
+    color: #000000 !important;
+  }
+  
+  .dark .text-primary {
+    color: #ffffff !important;
+  }
+  
+  .text-secondary {
+    color: #1e40af !important;
+  }
+  
+  .dark .text-secondary {
+    color: #f3f4f6 !important;
+  }
+
+  .text-tertiary {
+    color: #2563eb !important;
+  }
+  
+  .dark .text-tertiary {
+    color: #e5e7eb !important;
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Focus styles for accessibility */
+button:focus-visible,
+input:focus-visible {
+  @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+}
+
+.dark button:focus-visible,
+.dark input:focus-visible {
+  @apply ring-blue-400 ring-offset-gray-900;
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  /* Disable mouse cursor light effect for reduced motion */
+  .cursor-light-container {
+    cursor: auto !important;
+  }
+  
+  .cursor-light-container * {
+    cursor: auto !important;
+  }
+}
+
+/* Custom animations for particles */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-10px) rotate(120deg); }
+  66% { transform: translateY(5px) rotate(240deg); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Enhanced spotlight effect */
+.spotlight-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.spotlight-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
+    rgba(59, 130, 246, 0.08) 0%, 
+    transparent 50%);
+  pointer-events: none;
+  transition: background 0.2s ease-out;
+}
+
+.dark .spotlight-container::before {
+  background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
+    rgba(20, 184, 166, 0.08) 0%, 
+    transparent 50%);
+}
