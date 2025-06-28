@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Mail, Trash2, Check } from 'lucide-react';
 import { ClockDisplay } from './ClockDisplay';
 import { SettingsMenu } from './SettingsMenu';
+import { BackgroundPlayer } from './BackgroundPlayer';
 import { useDarkMode } from '../hooks/useDarkMode';
 
 interface Task {
@@ -117,6 +118,9 @@ export const TaskListApp: React.FC = () => {
           <SettingsMenu isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
         </div>
       </div>
+
+      {/* Background Audio Player */}
+      <BackgroundPlayer isDarkMode={isDarkMode} />
 
       {/* Task Input Section */}
       <div className="glass-card p-8">
