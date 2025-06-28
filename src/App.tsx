@@ -1,31 +1,30 @@
 import React from 'react';
 import { TaskListApp } from './components/TaskListApp';
-import { MouseCursorLight } from './components/MouseCursorLight';
+import { InteractiveBackground } from './components/InteractiveBackground';
+import { useDarkMode } from './hooks/useDarkMode';
 
 function App() {
+  const { isDarkMode } = useDarkMode();
+
   return (
-    <MouseCursorLight>
-      <div className="min-h-screen transition-colors duration-300" style={{
-        background: 'var(--app-background)'
-      }}>
-        <style>{`
-          :root {
-            --app-background: #f7f7f7;
-          }
-          
-          .dark {
-            --app-background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #0e4749 100%);
-          }
-          
-          body {
-            background: var(--app-background);
-          }
-        `}</style>
-        <div className="max-w-6xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
-          <TaskListApp />
+    <div className="min-h-screen transition-colors duration-300">
+      {isDarkMode ? (
+        <InteractiveBackground>
+          <div className="max-w-6xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
+            <TaskListApp />
+          </div>
+        </InteractiveBackground>
+      ) : (
+        <div 
+          className="min-h-screen"
+          style={{ background: '#f7f7f7' }}
+        >
+          <div className="max-w-6xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
+            <TaskListApp />
+          </div>
         </div>
-      </div>
-    </MouseCursorLight>
+      )}
+    </div>
   );
 }
 
