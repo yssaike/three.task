@@ -144,7 +144,6 @@ export const BackgroundPlayer: React.FC<BackgroundPlayerProps> = ({ isDarkMode }
       const audio = new Audio();
       audio.loop = true;
       audio.volume = isMuted ? 0 : volume;
-      audio.crossOrigin = 'anonymous';
       
       // Set up event listeners
       const handleLoadStart = () => setIsLoading(true);
