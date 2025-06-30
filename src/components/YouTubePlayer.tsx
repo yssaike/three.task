@@ -10,6 +10,7 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
   const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isPlaying, setIsPlaying] = useState(false);
   const playerRef = useRef<HTMLDivElement>(null);
 
   // Predefined popular background audio videos with actual YouTube video IDs
@@ -72,6 +73,7 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
     if (videoId) {
       setCurrentVideoId(videoId);
       setVideoUrl(url);
+      setIsPlaying(true);
     }
   };
 
@@ -79,6 +81,7 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
   const loadQuickVideo = (videoId: string) => {
     setCurrentVideoId(videoId);
     setVideoUrl(`https://www.youtube.com/watch?v=${videoId}`);
+    setIsPlaying(true);
   };
 
   // Handle form submission
@@ -123,6 +126,7 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
   const clearVideo = () => {
     setCurrentVideoId(null);
     setVideoUrl('');
+    setIsPlaying(false);
   };
 
   return (
@@ -155,9 +159,9 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
                 : '0 25px 50px -12px rgba(59, 130, 246, 0.25), 0 0 0 1px rgba(59, 130, 246, 0.2)'
             }}
           >
-            {/* YouTube Embed */}
+            {/* YouTube Embed with proper parameters */}
             <iframe
-              src={`https://www.youtube.com/embed/${currentVideoId}?autoplay=1&rel=0&modestbranding=1&showinfo=0`}
+              src={`https://www.youtube.com/embed/${currentVideoId}?autoplay=1&mute=0&rel=0&modestbranding=1&showinfo=0&controls=1&enablejsapi=1&origin=${window.location.origin}`}
               title="YouTube video player"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -166,6 +170,7 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
               style={{
                 borderRadius: 'inherit'
               }}
+              onLoad={() => setIsPlaying(true)}
             />
 
             {/* Overlay Controls */}
@@ -185,19 +190,14 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
                 <X size={18} />
               </button>
             </div>
-
-            {/* Loading Indicator */}
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-900/20 backdrop-blur-sm pointer-events-none">
-              <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin opacity-50" />
-            </div>
           </div>
 
           {/* Video Info */}
           <div className="mt-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              <div className={`w-2 h-2 rounded-full ${isPlaying ? 'bg-red-500 animate-pulse' : 'bg-gray-400'}`} />
               <span className="text-sm text-secondary font-medium">
-                Now Playing
+                {isPlaying ? 'Now Playing' : 'Paused'}
               </span>
             </div>
             <button
@@ -254,7 +254,7 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
             <ExternalLink size={18} />
             Search
           </button>
-        </div>
+          </div>
       </form>
 
       {/* Quick Links */}
@@ -292,7 +292,7 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
                 <div className="flex-1 min-w-0">
                   <div className="text-primary font-medium text-sm group-hover:text-blue-500 transition-colors duration-200 flex items-center gap-2">
                     {link.label}
-                    {currentVideoId === link.videoId && (
+                    {currentVideoId === link.videoId && isPlaying && (
                       <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                     )}
                   </div>
@@ -331,7 +331,8 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
               <li>• Paste any YouTube URL to play custom videos</li>
               <li>• Use search to find specific content on YouTube</li>
               <li>• Click fullscreen button for immersive viewing</li>
-              <li>• Videos maintain perfect 16:9 aspect ratio on all devices</li>
+              <li>• Videos will autoplay with sound enabled</li>
+              <li>• Use YouTube's built-in controls to adjust volume and playback</li>
             </ul>
           </div>
         </div>
