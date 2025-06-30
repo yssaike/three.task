@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Mail, Trash2, Check } from 'lucide-react';
 import { ClockDisplay } from './ClockDisplay';
 import { SettingsMenu } from './SettingsMenu';
-import { YouTubeLinkOpener } from './YouTubeLinkOpener';
+import { YouTubePlayer } from './YouTubePlayer';
 import { TaskSummaryBar } from './TaskSummaryBar';
 import { useDarkMode } from '../hooks/useDarkMode';
 
@@ -143,8 +143,8 @@ export const TaskListApp: React.FC = () => {
           </div>
         </div>
 
-        {/* YouTube Link Opener */}
-        <YouTubeLinkOpener isDarkMode={isDarkMode} />
+        {/* YouTube Player */}
+        <YouTubePlayer isDarkMode={isDarkMode} />
 
         {/* Task Input Section */}
         <div className="glass-card p-8">
