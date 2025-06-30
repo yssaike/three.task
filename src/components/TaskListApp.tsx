@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Mail, Trash2, Check, Palette } from 'lucide-react';
+import { Plus, Mail, Trash2, Check, Palette, Timer } from 'lucide-react';
 import { ClockDisplay } from './ClockDisplay';
 import { SettingsMenu } from './SettingsMenu';
 import { YouTubePlayer } from './YouTubePlayer';
 import { TaskSummaryBar } from './TaskSummaryBar';
 import { ColorSystemDemo } from './ColorSystemDemo';
+import { PomodoroScheduler } from './PomodoroScheduler';
 import { useDarkMode } from '../hooks/useDarkMode';
 
 interface Task {
@@ -22,6 +23,7 @@ export const TaskListApp: React.FC = () => {
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [showColorDemo, setShowColorDemo] = useState(false);
+  const [showPomodoroScheduler, setShowPomodoroScheduler] = useState(false);
   const { isDarkMode, toggleDarkMode } = useDarkMode();
 
   // Auto-refresh at end of day (midnight)
@@ -125,6 +127,44 @@ export const TaskListApp: React.FC = () => {
   const completedCount = tasks.filter(task => task.completed).length;
   const totalCount = tasks.length;
 
+  // Show Pomodoro Scheduler if enabled
+  if (showPomodoroScheduler) {
+    return (
+      <>
+        <div className="space-y-8 pb-20">
+          {/* Header with navigation back */}
+          <div className="flex justify-between items-start gap-6">
+            <button
+              onClick={() => setShowPomodoroScheduler(false)}
+              className="text-secondary hover:text-primary transition-colors duration-200 text-sm font-medium flex items-center gap-2"
+            >
+              ← Back to Task List
+            </button>
+            
+            <div className="flex items-start gap-4">
+              <ClockDisplay />
+              <button
+                onClick={() => setShowColorDemo(!showColorDemo)}
+                className="glass-card p-3 hover:scale-105 transition-all duration-300 ease-in-out focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                aria-label="Toggle color system demo"
+                title="Color System Demo"
+              >
+                <Palette size={24} className="text-yinmn-blue-500" />
+              </button>
+              <SettingsMenu isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
+            </div>
+          </div>
+
+          {/* Color System Demo */}
+          {showColorDemo && <ColorSystemDemo />}
+
+          {/* Pomodoro Scheduler */}
+          <PomodoroScheduler isDarkMode={isDarkMode} />
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <div className="space-y-8 pb-20"> {/* Added bottom padding for summary bar */}
@@ -141,6 +181,14 @@ export const TaskListApp: React.FC = () => {
           
           <div className="flex items-start gap-4">
             <ClockDisplay />
+            <button
+              onClick={() => setShowPomodoroScheduler(true)}
+              className="glass-card p-3 hover:scale-105 transition-all duration-300 ease-in-out focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              aria-label="Open Pomodoro scheduler"
+              title="Focused Work Schedule"
+            >
+              <Timer size={24} className="text-green-500" />
+            </button>
             <button
               onClick={() => setShowColorDemo(!showColorDemo)}
               className="glass-card p-3 hover:scale-105 transition-all duration-300 ease-in-out focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -329,9 +377,16 @@ export const TaskListApp: React.FC = () => {
           <div className="glass-card p-12 text-center">
             <div className="text-6xl mb-4">📝</div>
             <h3 className="text-xl font-light text-primary mb-2">No tasks yet</h3>
-            <p className="text-secondary font-normal">
+            <p className="text-secondary font-normal mb-6">
               Start by adding your first task above. Each task will be automatically numbered for easy organization.
             </p>
+            <button
+              onClick={() => setShowPomodoroScheduler(true)}
+              className="btn-primary px-6 py-3 rounded-lg font-medium flex items-center gap-3 mx-auto"
+            >
+              <Timer size={20} />
+              Try Focused Work Schedule
+            </button>
           </div>
         )}
       </div>
