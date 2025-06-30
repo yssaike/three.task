@@ -11,6 +11,7 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isPlaying, setIsPlaying] = useState(false);
+  const [embedError, setEmbedError] = useState(false);
   const playerRef = useRef<HTMLDivElement>(null);
 
   // Predefined popular background audio videos with actual YouTube video IDs
@@ -74,6 +75,7 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
       setCurrentVideoId(videoId);
       setVideoUrl(url);
       setIsPlaying(true);
+      setEmbedError(false);
     }
   };
 
@@ -82,6 +84,7 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
     setCurrentVideoId(videoId);
     setVideoUrl(`https://www.youtube.com/watch?v=${videoId}`);
     setIsPlaying(true);
+    setEmbedError(false);
   };
 
   // Handle form submission
@@ -127,6 +130,13 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
     setCurrentVideoId(null);
     setVideoUrl('');
     setIsPlaying(false);
+    setEmbedError(false);
+  };
+
+  // Handle iframe load error
+  const handleIframeError = () => {
+    setEmbedError(true);
+    setIsPlaying(false);
   };
 
   return (
@@ -159,45 +169,66 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
                 : '0 25px 50px -12px rgba(59, 130, 246, 0.25), 0 0 0 1px rgba(59, 130, 246, 0.2)'
             }}
           >
-            {/* YouTube Embed - Removed origin parameter */}
-            <iframe
-              src={`https://www.youtube.com/embed/${currentVideoId}?autoplay=1&rel=0&modestbranding=1&showinfo=0&controls=1&enablejsapi=1`}
-              title="YouTube video player"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-              className="absolute inset-0 w-full h-full"
-              style={{
-                borderRadius: 'inherit'
-              }}
-              onLoad={() => setIsPlaying(true)}
-            />
+            {!embedError ? (
+              <>
+                {/* YouTube Embed using nocookie domain */}
+                <iframe
+                  src={`https://www.youtube-nocookie.com/embed/${currentVideoId}?autoplay=1&rel=0&modestbranding=1&controls=1&disablekb=0&fs=1&iv_load_policy=3&playsinline=1&start=0&widget_referrer=${encodeURIComponent(window.location.href)}`}
+                  title="YouTube video player"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  className="absolute inset-0 w-full h-full"
+                  style={{
+                    borderRadius: 'inherit'
+                  }}
+                  onLoad={() => setIsPlaying(true)}
+                  onError={handleIframeError}
+                />
 
-            {/* Overlay Controls */}
-            <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <button
-                onClick={toggleFullscreen}
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white bg-black/50 hover:bg-black/70 backdrop-blur-sm transition-all duration-200 hover:scale-110"
-                aria-label="Toggle fullscreen"
-              >
-                <Maximize2 size={18} />
-              </button>
-              <button
-                onClick={clearVideo}
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white bg-black/50 hover:bg-black/70 backdrop-blur-sm transition-all duration-200 hover:scale-110"
-                aria-label="Close video"
-              >
-                <X size={18} />
-              </button>
-            </div>
+                {/* Overlay Controls */}
+                <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <button
+                    onClick={toggleFullscreen}
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-white bg-black/50 hover:bg-black/70 backdrop-blur-sm transition-all duration-200 hover:scale-110"
+                    aria-label="Toggle fullscreen"
+                  >
+                    <Maximize2 size={18} />
+                  </button>
+                  <button
+                    onClick={clearVideo}
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-white bg-black/50 hover:bg-black/70 backdrop-blur-sm transition-all duration-200 hover:scale-110"
+                    aria-label="Close video"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </>
+            ) : (
+              /* Fallback when embed fails */
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 text-white">
+                <Youtube size={48} className="text-red-500 mb-4" />
+                <h3 className="text-lg font-medium mb-2">Unable to embed video</h3>
+                <p className="text-sm text-gray-300 mb-4 text-center max-w-sm">
+                  This video cannot be embedded. Click below to watch it directly on YouTube.
+                </p>
+                <button
+                  onClick={() => window.open(`https://www.youtube.com/watch?v=${currentVideoId}`, '_blank')}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+                >
+                  <ExternalLink size={16} />
+                  Watch on YouTube
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Video Info */}
           <div className="mt-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`w-2 h-2 rounded-full ${isPlaying ? 'bg-red-500 animate-pulse' : 'bg-gray-400'}`} />
+              <div className={`w-2 h-2 rounded-full ${isPlaying && !embedError ? 'bg-red-500 animate-pulse' : 'bg-gray-400'}`} />
               <span className="text-sm text-secondary font-medium">
-                {isPlaying ? 'Now Playing' : 'Ready to Play'}
+                {embedError ? 'Embed Blocked' : isPlaying ? 'Now Playing' : 'Ready to Play'}
               </span>
             </div>
             <button
@@ -292,7 +323,7 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
                 <div className="flex-1 min-w-0">
                   <div className="text-primary font-medium text-sm group-hover:text-blue-500 transition-colors duration-200 flex items-center gap-2">
                     {link.label}
-                    {currentVideoId === link.videoId && isPlaying && (
+                    {currentVideoId === link.videoId && isPlaying && !embedError && (
                       <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                     )}
                   </div>
@@ -331,8 +362,8 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
               <li>• Paste any YouTube URL to play custom videos</li>
               <li>• Use search to find specific content on YouTube</li>
               <li>• Click fullscreen button for immersive viewing</li>
+              <li>• If embedding fails, click "Watch on YouTube" to open directly</li>
               <li>• Videos will autoplay and maintain perfect 16:9 aspect ratio</li>
-              <li>• Use YouTube's built-in controls to adjust volume and playback</li>
             </ul>
           </div>
         </div>
