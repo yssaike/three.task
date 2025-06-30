@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Mail, Trash2, Check } from 'lucide-react';
+import { Plus, Mail, Trash2, Check, Palette } from 'lucide-react';
 import { ClockDisplay } from './ClockDisplay';
 import { SettingsMenu } from './SettingsMenu';
 import { YouTubePlayer } from './YouTubePlayer';
 import { TaskSummaryBar } from './TaskSummaryBar';
+import { ColorSystemDemo } from './ColorSystemDemo';
 import { useDarkMode } from '../hooks/useDarkMode';
 
 interface Task {
@@ -20,6 +21,7 @@ export const TaskListApp: React.FC = () => {
   const [emailInput, setEmailInput] = useState('');
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [emailError, setEmailError] = useState('');
+  const [showColorDemo, setShowColorDemo] = useState(false);
   const { isDarkMode, toggleDarkMode } = useDarkMode();
 
   // Auto-refresh at end of day (midnight)
@@ -139,9 +141,20 @@ export const TaskListApp: React.FC = () => {
           
           <div className="flex items-start gap-4">
             <ClockDisplay />
+            <button
+              onClick={() => setShowColorDemo(!showColorDemo)}
+              className="glass-card p-3 hover:scale-105 transition-all duration-300 ease-in-out focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              aria-label="Toggle color system demo"
+              title="Color System Demo"
+            >
+              <Palette size={24} className="text-yinmn-blue-500" />
+            </button>
             <SettingsMenu isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
           </div>
         </div>
+
+        {/* Color System Demo */}
+        {showColorDemo && <ColorSystemDemo />}
 
         {/* YouTube Player */}
         <YouTubePlayer isDarkMode={isDarkMode} />
@@ -158,13 +171,13 @@ export const TaskListApp: React.FC = () => {
                 onChange={(e) => setTaskInput(e.target.value)}
                 placeholder="Enter your task here..."
                 maxLength={200}
-                className="w-full px-4 py-3 glass-card text-input placeholder:text-placeholder border-none outline-none text-lg font-normal focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="w-full px-4 py-3 glass-card text-input placeholder:text-placeholder border-none outline-none text-lg font-normal focus:ring-2 focus:ring-yinmn-blue-500 focus:ring-offset-2"
               />
             </div>
             <button
               type="submit"
               disabled={!taskInput.trim()}
-              className="glass-card px-6 py-3 hover:scale-105 disabled:hover:scale-100 disabled:opacity-50 transition-all duration-300 ease-in-out flex items-center gap-3 font-medium text-button hover:text-button focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="btn-primary px-6 py-3 rounded-lg disabled:opacity-50 disabled:hover:scale-100 transition-all duration-300 ease-in-out flex items-center gap-3 font-medium focus:ring-2 focus:ring-yinmn-blue-500 focus:ring-offset-2"
             >
               <Plus size={20} />
               Add Task
@@ -215,10 +228,8 @@ export const TaskListApp: React.FC = () => {
                       onClick={() => toggleTask(task.id)}
                       className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ease-in-out hover:scale-110 ${
                         task.completed
-                          ? 'bg-green-600 border-green-600 text-white shadow-lg shadow-green-600/25'
-                          : isDarkMode 
-                            ? 'border-gray-300 hover:border-green-400 hover:bg-green-400/10'
-                            : 'border-blue-600 hover:border-green-500 hover:bg-green-500/10'
+                          ? 'bg-success-500 border-success-500 text-white shadow-lg'
+                          : 'border-yinmn-blue-500 hover:border-success-500 hover:bg-success-500/10'
                       }`}
                       aria-label={task.completed ? 'Mark as incomplete' : 'Mark as complete'}
                     >
@@ -234,10 +245,7 @@ export const TaskListApp: React.FC = () => {
 
                   <button
                     onClick={() => deleteTask(task.id)}
-                    className="flex-shrink-0 w-8 h-8 text-tertiary hover:text-error hover:scale-110 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out"
-                    style={{
-                      backgroundColor: isDarkMode ? 'rgba(248, 113, 113, 0.1)' : 'rgba(220, 38, 38, 0.1)'
-                    }}
+                    className="flex-shrink-0 w-8 h-8 text-tertiary hover:text-error hover:scale-110 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out bg-error-500/10 hover:bg-error-500/20"
                     aria-label="Delete task"
                   >
                     <Trash2 size={16} />
@@ -248,26 +256,16 @@ export const TaskListApp: React.FC = () => {
 
             {/* Progress Bar */}
             {totalCount > 0 && (
-              <div 
-                className="mt-6 pt-6 border-t"
-                style={{
-                  borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(59, 130, 246, 0.2)'
-                }}
-              >
+              <div className="mt-6 pt-6 border-t border-primary">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm text-secondary font-medium">Progress</span>
                   <span className="text-sm text-secondary font-medium font-time">
                     {Math.round((completedCount / totalCount) * 100)}%
                   </span>
                 </div>
-                <div 
-                  className="w-full h-2 rounded-full overflow-hidden"
-                  style={{
-                    backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(59, 130, 246, 0.2)'
-                  }}
-                >
+                <div className="w-full h-2 bg-silver-lake-blue-200 dark:bg-rich-black-700 rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-500 ease-out"
+                    className="h-full bg-gradient-to-r from-success-500 to-yinmn-blue-500 rounded-full transition-all duration-500 ease-out"
                     style={{ width: `${(completedCount / totalCount) * 100}%` }}
                   />
                 </div>
@@ -292,13 +290,13 @@ export const TaskListApp: React.FC = () => {
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
                   placeholder="Enter your email address..."
-                  className="w-full px-4 py-3 glass-card text-input placeholder:text-placeholder border-none outline-none text-lg font-normal focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  className="w-full px-4 py-3 glass-card text-input placeholder:text-placeholder border-none outline-none text-lg font-normal focus:ring-2 focus:ring-yinmn-blue-500 focus:ring-offset-2"
                 />
               </div>
               <button
                 type="submit"
                 disabled={!emailInput.trim() || tasks.length === 0}
-                className="glass-card px-6 py-3 hover:scale-105 disabled:hover:scale-100 disabled:opacity-50 transition-all duration-300 ease-in-out flex items-center gap-3 font-medium text-button hover:text-button focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="btn-secondary px-6 py-3 rounded-lg disabled:opacity-50 disabled:hover:scale-100 transition-all duration-300 ease-in-out flex items-center gap-3 font-medium focus:ring-2 focus:ring-oxford-blue-500 focus:ring-offset-2"
               >
                 <Mail size={20} />
                 Send Email
@@ -306,25 +304,13 @@ export const TaskListApp: React.FC = () => {
             </div>
 
             {emailError && (
-              <div 
-                className="text-error text-sm font-medium p-3 rounded-lg border"
-                style={{
-                  backgroundColor: isDarkMode ? 'rgba(248, 113, 113, 0.1)' : 'rgba(220, 38, 38, 0.1)',
-                  borderColor: isDarkMode ? 'rgba(248, 113, 113, 0.3)' : 'rgba(220, 38, 38, 0.3)'
-                }}
-              >
+              <div className="status-error p-3 rounded-lg text-sm font-medium">
                 {emailError}
               </div>
             )}
 
             {isEmailSent && (
-              <div 
-                className="text-success text-sm font-medium p-3 rounded-lg border"
-                style={{
-                  backgroundColor: isDarkMode ? 'rgba(52, 211, 153, 0.1)' : 'rgba(22, 163, 74, 0.1)',
-                  borderColor: isDarkMode ? 'rgba(52, 211, 153, 0.3)' : 'rgba(22, 163, 74, 0.3)'
-                }}
-              >
+              <div className="status-success p-3 rounded-lg text-sm font-medium">
                 ✓ Task list sent successfully! Check your email inbox.
               </div>
             )}
