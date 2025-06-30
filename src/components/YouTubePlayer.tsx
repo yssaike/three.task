@@ -159,9 +159,9 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
                 : '0 25px 50px -12px rgba(59, 130, 246, 0.25), 0 0 0 1px rgba(59, 130, 246, 0.2)'
             }}
           >
-            {/* YouTube Embed with proper parameters */}
+            {/* YouTube Embed - Removed origin parameter */}
             <iframe
-              src={`https://www.youtube.com/embed/${currentVideoId}?autoplay=1&mute=0&rel=0&modestbranding=1&showinfo=0&controls=1&enablejsapi=1&origin=${window.location.origin}`}
+              src={`https://www.youtube.com/embed/${currentVideoId}?autoplay=1&rel=0&modestbranding=1&showinfo=0&controls=1&enablejsapi=1`}
               title="YouTube video player"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -197,7 +197,7 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
             <div className="flex items-center gap-3">
               <div className={`w-2 h-2 rounded-full ${isPlaying ? 'bg-red-500 animate-pulse' : 'bg-gray-400'}`} />
               <span className="text-sm text-secondary font-medium">
-                {isPlaying ? 'Now Playing' : 'Paused'}
+                {isPlaying ? 'Now Playing' : 'Ready to Play'}
               </span>
             </div>
             <button
@@ -254,7 +254,7 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
             <ExternalLink size={18} />
             Search
           </button>
-          </div>
+        </div>
       </form>
 
       {/* Quick Links */}
@@ -331,7 +331,7 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
               <li>• Paste any YouTube URL to play custom videos</li>
               <li>• Use search to find specific content on YouTube</li>
               <li>• Click fullscreen button for immersive viewing</li>
-              <li>• Videos will autoplay with sound enabled</li>
+              <li>• Videos will autoplay and maintain perfect 16:9 aspect ratio</li>
               <li>• Use YouTube's built-in controls to adjust volume and playback</li>
             </ul>
           </div>
