@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Youtube, ExternalLink, Music, Volume2, Play, Maximize2, X } from 'lucide-react';
+import { Youtube, ExternalLink, Music, Volume2, Play, Maximize2, X, AlertCircle } from 'lucide-react';
 
 interface YouTubePlayerProps {
   isDarkMode: boolean;
@@ -10,9 +10,10 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
   const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [embedError, setEmbedError] = useState(false);
+  const [embedBlocked, setEmbedBlocked] = useState(false);
+  const [showEmbedWarning, setShowEmbedWarning] = useState(false);
   const playerRef = useRef<HTMLDivElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // Predefined popular background audio videos with actual YouTube video IDs
   const quickLinks = [
@@ -74,8 +75,13 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
     if (videoId) {
       setCurrentVideoId(videoId);
       setVideoUrl(url);
-      setIsPlaying(true);
-      setEmbedError(false);
+      setEmbedBlocked(false);
+      setShowEmbedWarning(true);
+      
+      // Hide warning after 3 seconds if embed works
+      setTimeout(() => {
+        setShowEmbedWarning(false);
+      }, 3000);
     }
   };
 
@@ -83,8 +89,13 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
   const loadQuickVideo = (videoId: string) => {
     setCurrentVideoId(videoId);
     setVideoUrl(`https://www.youtube.com/watch?v=${videoId}`);
-    setIsPlaying(true);
-    setEmbedError(false);
+    setEmbedBlocked(false);
+    setShowEmbedWarning(true);
+    
+    // Hide warning after 3 seconds if embed works
+    setTimeout(() => {
+      setShowEmbedWarning(false);
+    }, 3000);
   };
 
   // Handle form submission
@@ -129,14 +140,19 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
   const clearVideo = () => {
     setCurrentVideoId(null);
     setVideoUrl('');
-    setIsPlaying(false);
-    setEmbedError(false);
+    setEmbedBlocked(false);
+    setShowEmbedWarning(false);
   };
 
   // Handle iframe load error
   const handleIframeError = () => {
-    setEmbedError(true);
-    setIsPlaying(false);
+    setEmbedBlocked(true);
+    setShowEmbedWarning(false);
+  };
+
+  // Open video directly on YouTube
+  const openOnYouTube = (videoId: string) => {
+    window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -155,6 +171,30 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
         </button>
       </div>
 
+      {/* Embed Warning */}
+      {showEmbedWarning && (
+        <div 
+          className="mb-4 p-4 rounded-lg border flex items-start gap-3"
+          style={{
+            backgroundColor: isDarkMode 
+              ? 'rgba(245, 158, 11, 0.1)' 
+              : 'rgba(245, 158, 11, 0.05)',
+            borderColor: isDarkMode 
+              ? 'rgba(245, 158, 11, 0.3)' 
+              : 'rgba(245, 158, 11, 0.2)'
+          }}
+        >
+          <AlertCircle size={18} className="text-warning-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <h4 className="text-primary font-medium text-sm mb-1">Embedding Notice</h4>
+            <p className="text-secondary text-sm leading-relaxed">
+              If the video doesn't load below, it may be due to embedding restrictions. 
+              You can always click "Open on YouTube" to watch directly.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Video Player */}
       {currentVideoId && (
         <div className="mb-6">
@@ -169,11 +209,12 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
                 : '0 25px 50px -12px rgba(59, 130, 246, 0.25), 0 0 0 1px rgba(59, 130, 246, 0.2)'
             }}
           >
-            {!embedError ? (
+            {!embedBlocked ? (
               <>
-                {/* YouTube Embed using nocookie domain */}
+                {/* YouTube Embed - Try multiple approaches */}
                 <iframe
-                  src={`https://www.youtube-nocookie.com/embed/${currentVideoId}?autoplay=1&rel=0&modestbranding=1&controls=1&disablekb=0&fs=1&iv_load_policy=3&playsinline=1&start=0&widget_referrer=${encodeURIComponent(window.location.href)}`}
+                  ref={iframeRef}
+                  src={`https://www.youtube.com/embed/${currentVideoId}?autoplay=1&rel=0&modestbranding=1&controls=1&fs=1&playsinline=1`}
                   title="YouTube video player"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -182,12 +223,32 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
                   style={{
                     borderRadius: 'inherit'
                   }}
-                  onLoad={() => setIsPlaying(true)}
                   onError={handleIframeError}
+                  onLoad={() => {
+                    // Check if iframe actually loaded content
+                    setTimeout(() => {
+                      try {
+                        if (iframeRef.current && !iframeRef.current.contentDocument) {
+                          // If we can't access content, it might be blocked
+                          setEmbedBlocked(true);
+                        }
+                      } catch (e) {
+                        // Cross-origin restrictions are normal, don't treat as error
+                      }
+                    }, 2000);
+                  }}
                 />
 
                 {/* Overlay Controls */}
                 <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <button
+                    onClick={() => openOnYouTube(currentVideoId)}
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-white bg-red-600/80 hover:bg-red-600 backdrop-blur-sm transition-all duration-200 hover:scale-110"
+                    aria-label="Open on YouTube"
+                    title="Open on YouTube"
+                  >
+                    <ExternalLink size={16} />
+                  </button>
                   <button
                     onClick={toggleFullscreen}
                     className="w-10 h-10 rounded-full flex items-center justify-center text-white bg-black/50 hover:bg-black/70 backdrop-blur-sm transition-all duration-200 hover:scale-110"
@@ -205,20 +266,29 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
                 </div>
               </>
             ) : (
-              /* Fallback when embed fails */
+              /* Fallback when embed is blocked */
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 text-white">
                 <Youtube size={48} className="text-red-500 mb-4" />
-                <h3 className="text-lg font-medium mb-2">Unable to embed video</h3>
-                <p className="text-sm text-gray-300 mb-4 text-center max-w-sm">
-                  This video cannot be embedded. Click below to watch it directly on YouTube.
+                <h3 className="text-lg font-medium mb-2">Embedding Restricted</h3>
+                <p className="text-sm text-gray-300 mb-6 text-center max-w-sm leading-relaxed">
+                  This video cannot be embedded in this environment. This is common in development setups or due to video restrictions.
                 </p>
-                <button
-                  onClick={() => window.open(`https://www.youtube.com/watch?v=${currentVideoId}`, '_blank')}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
-                >
-                  <ExternalLink size={16} />
-                  Watch on YouTube
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => openOnYouTube(currentVideoId)}
+                    className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+                  >
+                    <Youtube size={18} />
+                    Watch on YouTube
+                  </button>
+                  <button
+                    onClick={clearVideo}
+                    className="px-6 py-3 bg-gray-600 hover:bg-gray-700 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+                  >
+                    <X size={18} />
+                    Close
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -226,17 +296,17 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
           {/* Video Info */}
           <div className="mt-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`w-2 h-2 rounded-full ${isPlaying && !embedError ? 'bg-red-500 animate-pulse' : 'bg-gray-400'}`} />
+              <div className={`w-2 h-2 rounded-full ${!embedBlocked ? 'bg-red-500 animate-pulse' : 'bg-gray-400'}`} />
               <span className="text-sm text-secondary font-medium">
-                {embedError ? 'Embed Blocked' : isPlaying ? 'Now Playing' : 'Ready to Play'}
+                {embedBlocked ? 'Embed Blocked - Use YouTube Link' : 'Ready to Play'}
               </span>
             </div>
             <button
-              onClick={() => window.open(`https://www.youtube.com/watch?v=${currentVideoId}`, '_blank')}
+              onClick={() => openOnYouTube(currentVideoId)}
               className="text-xs text-tertiary hover:text-primary transition-colors duration-200 flex items-center gap-1"
             >
               <ExternalLink size={12} />
-              Open in YouTube
+              Open on YouTube
             </button>
           </div>
         </div>
@@ -297,46 +367,59 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {quickLinks.map((link, index) => (
-            <button
-              key={index}
-              onClick={() => loadQuickVideo(link.videoId)}
-              className="p-4 rounded-xl text-left transition-all duration-200 hover:scale-[1.02] border-2 group"
-              style={{
-                backgroundColor: currentVideoId === link.videoId
-                  ? isDarkMode 
-                    ? 'rgba(59, 130, 246, 0.2)' 
-                    : 'rgba(59, 130, 246, 0.1)'
-                  : isDarkMode 
-                    ? 'rgba(255, 255, 255, 0.05)' 
-                    : 'rgba(59, 130, 246, 0.05)',
-                borderColor: currentVideoId === link.videoId
-                  ? isDarkMode 
-                    ? 'rgba(59, 130, 246, 0.5)' 
-                    : 'rgba(59, 130, 246, 0.3)'
-                  : isDarkMode 
-                    ? 'rgba(255, 255, 255, 0.1)' 
-                    : 'rgba(59, 130, 246, 0.2)'
-              }}
-            >
-              <div className="flex items-start gap-3">
-                <span className="text-2xl flex-shrink-0">{link.icon}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="text-primary font-medium text-sm group-hover:text-blue-500 transition-colors duration-200 flex items-center gap-2">
-                    {link.label}
-                    {currentVideoId === link.videoId && isPlaying && !embedError && (
-                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                    )}
-                  </div>
-                  <div className="text-tertiary text-xs mt-1 line-clamp-2">
-                    {link.description}
-                  </div>
-                  <div className="text-tertiary text-xs mt-2 flex items-center gap-1">
-                    <Play size={10} />
-                    Click to play
+            <div key={index} className="relative group">
+              <button
+                onClick={() => loadQuickVideo(link.videoId)}
+                className="w-full p-4 rounded-xl text-left transition-all duration-200 hover:scale-[1.02] border-2"
+                style={{
+                  backgroundColor: currentVideoId === link.videoId
+                    ? isDarkMode 
+                      ? 'rgba(59, 130, 246, 0.2)' 
+                      : 'rgba(59, 130, 246, 0.1)'
+                    : isDarkMode 
+                      ? 'rgba(255, 255, 255, 0.05)' 
+                      : 'rgba(59, 130, 246, 0.05)',
+                  borderColor: currentVideoId === link.videoId
+                    ? isDarkMode 
+                      ? 'rgba(59, 130, 246, 0.5)' 
+                      : 'rgba(59, 130, 246, 0.3)'
+                    : isDarkMode 
+                      ? 'rgba(255, 255, 255, 0.1)' 
+                      : 'rgba(59, 130, 246, 0.2)'
+                }}
+              >
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl flex-shrink-0">{link.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-primary font-medium text-sm group-hover:text-blue-500 transition-colors duration-200 flex items-center gap-2">
+                      {link.label}
+                      {currentVideoId === link.videoId && !embedBlocked && (
+                        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                      )}
+                    </div>
+                    <div className="text-tertiary text-xs mt-1 line-clamp-2">
+                      {link.description}
+                    </div>
+                    <div className="text-tertiary text-xs mt-2 flex items-center gap-1">
+                      <Play size={10} />
+                      Click to load
+                    </div>
                   </div>
                 </div>
-              </div>
-            </button>
+              </button>
+              
+              {/* Direct YouTube link button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openOnYouTube(link.videoId);
+                }}
+                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-600/80 hover:bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110"
+                title="Open directly on YouTube"
+              >
+                <ExternalLink size={12} />
+              </button>
+            </div>
           ))}
         </div>
       </div>
@@ -358,12 +441,12 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
           <div>
             <h4 className="text-primary font-medium text-sm mb-1">How to use</h4>
             <ul className="text-secondary text-sm leading-relaxed space-y-1">
-              <li>• Click any category above to instantly load background audio</li>
-              <li>• Paste any YouTube URL to play custom videos</li>
+              <li>• Click any category above to load background audio</li>
+              <li>• Paste any YouTube URL to load custom videos</li>
               <li>• Use search to find specific content on YouTube</li>
-              <li>• Click fullscreen button for immersive viewing</li>
-              <li>• If embedding fails, click "Watch on YouTube" to open directly</li>
-              <li>• Videos will autoplay and maintain perfect 16:9 aspect ratio</li>
+              <li>• If embedding is blocked, use the "Open on YouTube" buttons</li>
+              <li>• All videos open in new tabs for seamless multitasking</li>
+              <li>• Embedding may be restricted in development environments</li>
             </ul>
           </div>
         </div>
