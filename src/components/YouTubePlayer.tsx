@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Youtube, ExternalLink, Music, Volume2, Play, Maximize2, X, AlertCircle } from 'lucide-react';
+import { Youtube, ExternalLink, Music, Volume2, Play, Maximize2, X, Info } from 'lucide-react';
 
 interface YouTubePlayerProps {
   isDarkMode: boolean;
@@ -11,7 +11,7 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [embedBlocked, setEmbedBlocked] = useState(false);
-  const [showEmbedWarning, setShowEmbedWarning] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const playerRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -76,12 +76,16 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
       setCurrentVideoId(videoId);
       setVideoUrl(url);
       setEmbedBlocked(false);
-      setShowEmbedWarning(true);
+      setIsLoading(true);
       
-      // Hide warning after 3 seconds if embed works
+      // Check for embed blocking after a delay
       setTimeout(() => {
-        setShowEmbedWarning(false);
-      }, 3000);
+        setIsLoading(false);
+        // In development, assume embedding might be blocked
+        if (window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1')) {
+          setEmbedBlocked(true);
+        }
+      }, 2000);
     }
   };
 
@@ -90,12 +94,16 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
     setCurrentVideoId(videoId);
     setVideoUrl(`https://www.youtube.com/watch?v=${videoId}`);
     setEmbedBlocked(false);
-    setShowEmbedWarning(true);
+    setIsLoading(true);
     
-    // Hide warning after 3 seconds if embed works
+    // Check for embed blocking after a delay
     setTimeout(() => {
-      setShowEmbedWarning(false);
-    }, 3000);
+      setIsLoading(false);
+      // In development, assume embedding might be blocked
+      if (window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1')) {
+        setEmbedBlocked(true);
+      }
+    }, 2000);
   };
 
   // Handle form submission
@@ -141,18 +149,18 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
     setCurrentVideoId(null);
     setVideoUrl('');
     setEmbedBlocked(false);
-    setShowEmbedWarning(false);
-  };
-
-  // Handle iframe load error
-  const handleIframeError = () => {
-    setEmbedBlocked(true);
-    setShowEmbedWarning(false);
+    setIsLoading(false);
   };
 
   // Open video directly on YouTube
   const openOnYouTube = (videoId: string) => {
     window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank', 'noopener,noreferrer');
+  };
+
+  // Get video title from quick links
+  const getVideoTitle = (videoId: string) => {
+    const link = quickLinks.find(l => l.videoId === videoId);
+    return link ? link.label : 'YouTube Video';
   };
 
   return (
@@ -171,29 +179,27 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
         </button>
       </div>
 
-      {/* Embed Warning */}
-      {showEmbedWarning && (
-        <div 
-          className="mb-4 p-4 rounded-lg border flex items-start gap-3"
-          style={{
-            backgroundColor: isDarkMode 
-              ? 'rgba(245, 158, 11, 0.1)' 
-              : 'rgba(245, 158, 11, 0.05)',
-            borderColor: isDarkMode 
-              ? 'rgba(245, 158, 11, 0.3)' 
-              : 'rgba(245, 158, 11, 0.2)'
-          }}
-        >
-          <AlertCircle size={18} className="text-warning-500 flex-shrink-0 mt-0.5" />
-          <div>
-            <h4 className="text-primary font-medium text-sm mb-1">Embedding Notice</h4>
-            <p className="text-secondary text-sm leading-relaxed">
-              If the video doesn't load below, it may be due to embedding restrictions. 
-              You can always click "Open on YouTube" to watch directly.
-            </p>
-          </div>
+      {/* Development Environment Notice */}
+      <div 
+        className="mb-6 p-4 rounded-lg border flex items-start gap-3"
+        style={{
+          backgroundColor: isDarkMode 
+            ? 'rgba(59, 130, 246, 0.1)' 
+            : 'rgba(59, 130, 246, 0.05)',
+          borderColor: isDarkMode 
+            ? 'rgba(59, 130, 246, 0.3)' 
+            : 'rgba(59, 130, 246, 0.2)'
+        }}
+      >
+        <Info size={18} className="text-blue-500 flex-shrink-0 mt-0.5" />
+        <div>
+          <h4 className="text-primary font-medium text-sm mb-1">Development Mode</h4>
+          <p className="text-secondary text-sm leading-relaxed">
+            YouTube embedding is often restricted in development environments. 
+            All videos will open directly on YouTube for the best experience.
+          </p>
         </div>
-      )}
+      </div>
 
       {/* Video Player */}
       {currentVideoId && (
@@ -209,86 +215,43 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
                 : '0 25px 50px -12px rgba(59, 130, 246, 0.25), 0 0 0 1px rgba(59, 130, 246, 0.2)'
             }}
           >
-            {!embedBlocked ? (
-              <>
-                {/* YouTube Embed - Try multiple approaches */}
-                <iframe
-                  ref={iframeRef}
-                  src={`https://www.youtube.com/embed/${currentVideoId}?autoplay=1&rel=0&modestbranding=1&controls=1&fs=1&playsinline=1`}
-                  title="YouTube video player"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                  className="absolute inset-0 w-full h-full"
-                  style={{
-                    borderRadius: 'inherit'
-                  }}
-                  onError={handleIframeError}
-                  onLoad={() => {
-                    // Check if iframe actually loaded content
-                    setTimeout(() => {
-                      try {
-                        if (iframeRef.current && !iframeRef.current.contentDocument) {
-                          // If we can't access content, it might be blocked
-                          setEmbedBlocked(true);
-                        }
-                      } catch (e) {
-                        // Cross-origin restrictions are normal, don't treat as error
-                      }
-                    }, 2000);
-                  }}
-                />
-
-                {/* Overlay Controls */}
-                <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <button
-                    onClick={() => openOnYouTube(currentVideoId)}
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white bg-red-600/80 hover:bg-red-600 backdrop-blur-sm transition-all duration-200 hover:scale-110"
-                    aria-label="Open on YouTube"
-                    title="Open on YouTube"
-                  >
-                    <ExternalLink size={16} />
-                  </button>
-                  <button
-                    onClick={toggleFullscreen}
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white bg-black/50 hover:bg-black/70 backdrop-blur-sm transition-all duration-200 hover:scale-110"
-                    aria-label="Toggle fullscreen"
-                  >
-                    <Maximize2 size={18} />
-                  </button>
-                  <button
-                    onClick={clearVideo}
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white bg-black/50 hover:bg-black/70 backdrop-blur-sm transition-all duration-200 hover:scale-110"
-                    aria-label="Close video"
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
-              </>
-            ) : (
-              /* Fallback when embed is blocked */
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 text-white">
-                <Youtube size={48} className="text-red-500 mb-4" />
-                <h3 className="text-lg font-medium mb-2">Embedding Restricted</h3>
-                <p className="text-sm text-gray-300 mb-6 text-center max-w-sm leading-relaxed">
-                  This video cannot be embedded in this environment. This is common in development setups or due to video restrictions.
+            {isLoading ? (
+              /* Loading State */
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-blue-600 to-purple-700 text-white">
+                <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin mb-4" />
+                <h3 className="text-lg font-medium mb-2">Loading Video...</h3>
+                <p className="text-sm text-blue-100 text-center max-w-sm leading-relaxed">
+                  Preparing {getVideoTitle(currentVideoId)} for playback
                 </p>
-                <div className="flex gap-3">
+              </div>
+            ) : (
+              /* YouTube Player Interface */
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-red-600 to-red-700 text-white">
+                <Youtube size={64} className="text-white mb-6 drop-shadow-lg" />
+                <h3 className="text-xl font-medium mb-2">{getVideoTitle(currentVideoId)}</h3>
+                <p className="text-sm text-red-100 mb-8 text-center max-w-md leading-relaxed">
+                  Ready to play on YouTube. Click below to open in a new tab and enjoy your background audio.
+                </p>
+                <div className="flex gap-4">
                   <button
                     onClick={() => openOnYouTube(currentVideoId)}
-                    className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+                    className="px-8 py-4 bg-white text-red-600 hover:bg-red-50 rounded-xl font-semibold transition-all duration-200 flex items-center gap-3 shadow-lg hover:shadow-xl hover:scale-105"
                   >
-                    <Youtube size={18} />
-                    Watch on YouTube
+                    <Youtube size={20} />
+                    Play on YouTube
                   </button>
                   <button
                     onClick={clearVideo}
-                    className="px-6 py-3 bg-gray-600 hover:bg-gray-700 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+                    className="px-6 py-4 bg-red-800/50 hover:bg-red-800/70 rounded-xl font-medium transition-all duration-200 flex items-center gap-2 backdrop-blur-sm"
                   >
                     <X size={18} />
                     Close
                   </button>
                 </div>
+                
+                {/* Decorative elements */}
+                <div className="absolute top-4 left-4 w-16 h-16 bg-white/10 rounded-full blur-xl" />
+                <div className="absolute bottom-4 right-4 w-24 h-24 bg-white/5 rounded-full blur-2xl" />
               </div>
             )}
           </div>
@@ -296,9 +259,9 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
           {/* Video Info */}
           <div className="mt-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`w-2 h-2 rounded-full ${!embedBlocked ? 'bg-red-500 animate-pulse' : 'bg-gray-400'}`} />
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
               <span className="text-sm text-secondary font-medium">
-                {embedBlocked ? 'Embed Blocked - Use YouTube Link' : 'Ready to Play'}
+                {isLoading ? 'Loading...' : 'Ready to Play'}
               </span>
             </div>
             <button
@@ -374,15 +337,15 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
                 style={{
                   backgroundColor: currentVideoId === link.videoId
                     ? isDarkMode 
-                      ? 'rgba(59, 130, 246, 0.2)' 
-                      : 'rgba(59, 130, 246, 0.1)'
+                      ? 'rgba(239, 68, 68, 0.2)' 
+                      : 'rgba(239, 68, 68, 0.1)'
                     : isDarkMode 
                       ? 'rgba(255, 255, 255, 0.05)' 
                       : 'rgba(59, 130, 246, 0.05)',
                   borderColor: currentVideoId === link.videoId
                     ? isDarkMode 
-                      ? 'rgba(59, 130, 246, 0.5)' 
-                      : 'rgba(59, 130, 246, 0.3)'
+                      ? 'rgba(239, 68, 68, 0.5)' 
+                      : 'rgba(239, 68, 68, 0.3)'
                     : isDarkMode 
                       ? 'rgba(255, 255, 255, 0.1)' 
                       : 'rgba(59, 130, 246, 0.2)'
@@ -391,9 +354,9 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
                 <div className="flex items-start gap-3">
                   <span className="text-2xl flex-shrink-0">{link.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="text-primary font-medium text-sm group-hover:text-blue-500 transition-colors duration-200 flex items-center gap-2">
+                    <div className="text-primary font-medium text-sm group-hover:text-red-500 transition-colors duration-200 flex items-center gap-2">
                       {link.label}
-                      {currentVideoId === link.videoId && !embedBlocked && (
+                      {currentVideoId === link.videoId && (
                         <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                       )}
                     </div>
@@ -402,7 +365,7 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
                     </div>
                     <div className="text-tertiary text-xs mt-2 flex items-center gap-1">
                       <Play size={10} />
-                      Click to load
+                      Click to select
                     </div>
                   </div>
                 </div>
@@ -429,24 +392,24 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ isDarkMode }) => {
         className="mt-6 p-4 rounded-lg border"
         style={{
           backgroundColor: isDarkMode 
-            ? 'rgba(59, 130, 246, 0.1)' 
-            : 'rgba(59, 130, 246, 0.05)',
+            ? 'rgba(34, 197, 94, 0.1)' 
+            : 'rgba(34, 197, 94, 0.05)',
           borderColor: isDarkMode 
-            ? 'rgba(59, 130, 246, 0.3)' 
-            : 'rgba(59, 130, 246, 0.2)'
+            ? 'rgba(34, 197, 94, 0.3)' 
+            : 'rgba(34, 197, 94, 0.2)'
         }}
       >
         <div className="flex items-start gap-3">
-          <Volume2 size={18} className="text-blue-500 flex-shrink-0 mt-0.5" />
+          <Volume2 size={18} className="text-green-500 flex-shrink-0 mt-0.5" />
           <div>
             <h4 className="text-primary font-medium text-sm mb-1">How to use</h4>
             <ul className="text-secondary text-sm leading-relaxed space-y-1">
-              <li>• Click any category above to load background audio</li>
+              <li>• Click any category above to select background audio</li>
               <li>• Paste any YouTube URL to load custom videos</li>
               <li>• Use search to find specific content on YouTube</li>
-              <li>• If embedding is blocked, use the "Open on YouTube" buttons</li>
               <li>• All videos open in new tabs for seamless multitasking</li>
-              <li>• Embedding may be restricted in development environments</li>
+              <li>• Perfect for background music while working on tasks</li>
+              <li>• Hover over cards to see direct YouTube links</li>
             </ul>
           </div>
         </div>
