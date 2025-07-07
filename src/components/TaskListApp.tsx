@@ -190,7 +190,7 @@ export const TaskListApp: React.FC = () => {
         </div>
       </div>
 
-      <div className="space-y-8 pb-20 pt-4"> {/* Added bottom padding for summary bar */}
+      <div className="space-y-8 pb-20 pt-4">
         {/* Header with Clock and Settings */}
         <div className="flex justify-between items-start gap-6">
           <div className="flex-1">
@@ -401,56 +401,6 @@ export const TaskListApp: React.FC = () => {
                 </div>
               </div>
             </div>
-                      {index + 1}.
-                    </span>
-                    
-                    <button
-                      onClick={() => toggleTask(task.id)}
-                      className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ease-in-out hover:scale-110 ${
-                        task.completed
-                          ? 'bg-success-500 border-success-500 text-white shadow-lg'
-                          : 'border-yinmn-blue-500 hover:border-success-500 hover:bg-success-500/10'
-                      }`}
-                      aria-label={task.completed ? 'Mark as incomplete' : 'Mark as complete'}
-                    >
-                      {task.completed && <Check size={14} />}
-                    </button>
-
-                    <span className={`text-lg font-normal text-primary flex-1 transition-all duration-300 ${
-                      task.completed ? 'line-through opacity-60' : ''
-                    }`}>
-                      {task.description}
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={() => deleteTask(task.id)}
-                    className="flex-shrink-0 w-8 h-8 text-tertiary hover:text-error hover:scale-110 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out bg-error-500/10 hover:bg-error-500/20"
-                    aria-label="Delete task"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            {/* Progress Bar */}
-            {totalCount > 0 && (
-              <div className="mt-8 pt-6 border-t border-primary">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm text-secondary font-medium">Progress</span>
-                  <span className="text-sm text-secondary font-medium font-time">
-                    {Math.round((completedCount / totalCount) * 100)}%
-                  </span>
-                </div>
-                <div className="w-full h-2 bg-silver-lake-blue-200 dark:bg-rich-black-700 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-success-500 to-yinmn-blue-500 rounded-full transition-all duration-500 ease-out"
-                    style={{ width: `${(completedCount / totalCount) * 100}%` }}
-                  />
-                </div>
-              </div>
-            )}
           </div>
         )}
 
