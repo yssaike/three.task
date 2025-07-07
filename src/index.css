@@ -128,6 +128,7 @@
   /* Time-related font family */
   .font-time {
     font-family: 'IBM Plex Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-feature-settings: 'tnum' 1; /* Tabular numbers for consistent spacing */
   }
 
   /* Body text font weights */
@@ -382,6 +383,12 @@
 [draggable="true"]:focus-visible {
   @apply outline-none ring-2 ring-offset-2;
   ring-color: var(--color-interactive-primary);
+}
+
+/* Sticky header blur effect */
+.sticky-header-blur {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 /* Ensure proper contrast ratios */
