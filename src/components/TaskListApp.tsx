@@ -141,14 +141,10 @@ export const TaskListApp: React.FC = () => {
   if (showPomodoroScheduler) {
     return (
       <>
-        {/* Fixed Clock Header */}
-        <div className="sticky top-0 z-20 bg-gradient-to-b from-white/95 to-white/80 dark:from-rich-black-900/95 dark:to-rich-black-900/80 backdrop-blur-md border-b border-primary pb-4 mb-8">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <Clock onMidnight={handleMidnight} />
-          </div>
+        {/* Fixed Clock Header - No Container */}
+        <div className="sticky top-0 z-20 pb-4 mb-8">
+          <Clock onMidnight={handleMidnight} />
         </div>
-
-        <div className="space-y-8 pb-20 pt-4">
           {/* Header with navigation back */}
           <div className="flex justify-between items-start gap-6">
             <button
@@ -226,8 +222,8 @@ export const TaskListApp: React.FC = () => {
         {/* Color System Demo */}
         {showColorDemo && <ColorSystemDemo />}
 
-        {/* YouTube Player */}
-        <YouTubePlayer isDarkMode={isDarkMode} />
+        {/* Built-in Audio Player */}
+        <AudioPlayer isDarkMode={isDarkMode} />
 
         {/* Task Input Section */}
         <div className="glass-card p-8">
