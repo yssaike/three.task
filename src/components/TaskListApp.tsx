@@ -7,6 +7,7 @@ import { YouTubePlayer } from './YouTubePlayer';
 import { TaskSummaryBar } from './TaskSummaryBar';
 import { ColorSystemDemo } from './ColorSystemDemo';
 import { PomodoroScheduler } from './PomodoroScheduler';
+import { AudioPlayer } from './AudioPlayer';
 import { useDarkMode } from '../hooks/useDarkMode';
 
 interface Task {
