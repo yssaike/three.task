@@ -172,7 +172,6 @@ export const TaskListApp: React.FC = () => {
 
           {/* Pomodoro Scheduler */}
           <PomodoroScheduler isDarkMode={isDarkMode} />
-        </div>
       </>
     );
   }
