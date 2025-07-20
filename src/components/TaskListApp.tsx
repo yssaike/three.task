@@ -142,12 +142,10 @@ export const TaskListApp: React.FC = () => {
   if (showPomodoroScheduler) {
     return (
       <>
-        {/* Fixed Clock Header - No Container */}
-        <div className="sticky top-0 z-20 pb-4 mb-8">
+        {/* Clock Display */}
+        <div className="mb-8">
           <Clock onMidnight={handleMidnight} />
         </div>
-          {/* Header with navigation back */}
-          <div className="flex justify-between items-start gap-6">
             <button
               onClick={() => setShowPomodoroScheduler(false)}
               className="text-secondary hover:text-primary transition-colors duration-200 text-sm font-medium flex items-center gap-2"
