@@ -164,7 +164,6 @@ export const TaskListApp: React.FC = () => {
               </button>
               <SettingsMenu isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
             </div>
-          </div>
 
           {/* Color System Demo */}
           {showColorDemo && <ColorSystemDemo />}
