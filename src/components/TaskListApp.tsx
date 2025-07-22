@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Mail, Trash2, Check, Palette, Timer } from 'lucide-react';
+import { KanbanBoard } from './KanbanBoard';
 import { Clock } from './Clock';
 import { ClockDisplay } from './ClockDisplay';
 import { SettingsMenu } from './SettingsMenu';
@@ -26,6 +27,7 @@ export const TaskListApp: React.FC = () => {
   const [emailError, setEmailError] = useState('');
   const [showColorDemo, setShowColorDemo] = useState(false);
   const [showPomodoroScheduler, setShowPomodoroScheduler] = useState(false);
+  const [showKanbanBoard, setShowKanbanBoard] = useState(false);
   const { isDarkMode, toggleDarkMode } = useDarkMode();
 
   // Handle midnight reset
@@ -174,6 +176,45 @@ export const TaskListApp: React.FC = () => {
     );
   }
 
+  // Show Kanban Board if enabled
+  if (showKanbanBoard) {
+    return (
+      <>
+        {/* Clock Display */}
+        <div className="mb-8">
+          <Clock onMidnight={handleMidnight} />
+        </div>
+        
+        <div className="mb-8">
+          <button
+            onClick={() => setShowKanbanBoard(false)}
+            className="text-secondary hover:text-primary transition-colors duration-200 text-sm font-medium flex items-center gap-2"
+          >
+            ← Back to Task List
+          </button>
+          
+          <div className="flex items-start gap-4 mt-4">
+            <button
+              onClick={() => setShowColorDemo(!showColorDemo)}
+              className="glass-card p-3 hover:scale-105 transition-all duration-300 ease-in-out focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              aria-label="Toggle color system demo"
+              title="Color System Demo"
+            >
+              <Palette size={24} className="text-yinmn-blue-500" />
+            </button>
+            <SettingsMenu isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
+          </div>
+        </div>
+
+        {/* Color System Demo */}
+        {showColorDemo && <ColorSystemDemo />}
+
+        {/* Kanban Board */}
+        <KanbanBoard isDarkMode={isDarkMode} />
+      </>
+    );
+  }
+
   return (
     <>
       {/* Fixed Clock Header */}
@@ -196,6 +237,21 @@ export const TaskListApp: React.FC = () => {
           </div>
           
           <div className="flex items-start gap-4">
+            <button
+              onClick={() => setShowKanbanBoard(true)}
+              className="glass-card p-3 hover:scale-105 transition-all duration-300 ease-in-out focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              aria-label="Open Kanban board"
+              title="Kanban Board"
+            >
+              <div className="grid grid-cols-3 gap-0.5">
+                <div className="w-1.5 h-1.5 bg-blue-500 rounded-sm"></div>
+                <div className="w-1.5 h-1.5 bg-yellow-500 rounded-sm"></div>
+                <div className="w-1.5 h-1.5 bg-green-500 rounded-sm"></div>
+                <div className="w-1.5 h-1.5 bg-blue-500/50 rounded-sm"></div>
+                <div className="w-1.5 h-1.5 bg-yellow-500/50 rounded-sm"></div>
+                <div className="w-1.5 h-1.5 bg-green-500/50 rounded-sm"></div>
+              </div>
+            </button>
             <button
               onClick={() => setShowPomodoroScheduler(true)}
               className="glass-card p-3 hover:scale-105 transition-all duration-300 ease-in-out focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -463,6 +519,20 @@ export const TaskListApp: React.FC = () => {
             >
               <Timer size={20} />
               Try Focused Work Schedule
+            </button>
+            <button
+              onClick={() => setShowKanbanBoard(true)}
+              className="btn-secondary px-6 py-3 rounded-lg font-medium flex items-center gap-3 mx-auto mt-4"
+            >
+              <div className="grid grid-cols-3 gap-0.5">
+                <div className="w-1.5 h-1.5 bg-blue-500 rounded-sm"></div>
+                <div className="w-1.5 h-1.5 bg-yellow-500 rounded-sm"></div>
+                <div className="w-1.5 h-1.5 bg-green-500 rounded-sm"></div>
+                <div className="w-1.5 h-1.5 bg-blue-500/50 rounded-sm"></div>
+                <div className="w-1.5 h-1.5 bg-yellow-500/50 rounded-sm"></div>
+                <div className="w-1.5 h-1.5 bg-green-500/50 rounded-sm"></div>
+              </div>
+              Try Kanban Board
             </button>
           </div>
         )}
