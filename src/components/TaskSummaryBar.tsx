@@ -11,10 +11,9 @@ interface Task {
 
 interface TaskSummaryBarProps {
   tasks: Task[];
-  isDarkMode: boolean;
 }
 
-export const TaskSummaryBar: React.FC<TaskSummaryBarProps> = ({ tasks, isDarkMode }) => {
+export const TaskSummaryBar: React.FC<TaskSummaryBarProps> = ({ tasks }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -67,12 +66,8 @@ export const TaskSummaryBar: React.FC<TaskSummaryBarProps> = ({ tasks, isDarkMod
       <div 
         className="backdrop-blur-md border-t transition-all duration-300 ease-in-out"
         style={{
-          backgroundColor: isDarkMode 
-            ? 'rgba(17, 25, 40, 0.95)' 
-            : 'rgba(255, 255, 255, 0.95)',
-          borderColor: isDarkMode 
-            ? 'rgba(255, 255, 255, 0.1)' 
-            : 'rgba(59, 130, 246, 0.2)',
+          backgroundColor: 'var(--glass-bg)',
+          borderColor: 'var(--border-primary)',
           maxHeight: isExpanded ? '20vh' : '4rem'
         }}
       >
@@ -163,9 +158,7 @@ export const TaskSummaryBar: React.FC<TaskSummaryBarProps> = ({ tasks, isDarkMod
                   onClick={() => setIsExpanded(!isExpanded)}
                   className="p-1.5 rounded-lg transition-all duration-200 hover:scale-110"
                   style={{
-                    backgroundColor: isDarkMode 
-                      ? 'rgba(255, 255, 255, 0.1)' 
-                      : 'rgba(59, 130, 246, 0.1)'
+                    backgroundColor: 'var(--bg-tertiary)'
                   }}
                   aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
                 >
@@ -181,9 +174,7 @@ export const TaskSummaryBar: React.FC<TaskSummaryBarProps> = ({ tasks, isDarkMod
           <div 
             className="px-6 pb-4 border-t overflow-y-auto"
             style={{
-              borderColor: isDarkMode 
-                ? 'rgba(255, 255, 255, 0.05)' 
-                : 'rgba(59, 130, 246, 0.1)',
+              borderColor: 'var(--border-primary)',
               maxHeight: 'calc(20vh - 4rem)'
             }}
           >
@@ -202,15 +193,13 @@ export const TaskSummaryBar: React.FC<TaskSummaryBarProps> = ({ tasks, isDarkMod
                           key={task.id}
                           className="flex items-center justify-between text-xs p-2 rounded-lg"
                           style={{
-                            backgroundColor: isDarkMode 
-                              ? 'rgba(52, 211, 153, 0.1)' 
-                              : 'rgba(22, 163, 74, 0.1)'
+                            backgroundColor: 'var(--success-bg)'
                           }}
                         >
-                          <span className="text-success truncate flex-1 mr-2">
+                          <span className="truncate flex-1 mr-2" style={{ color: 'var(--success-text)' }}>
                             {task.description}
                           </span>
-                          <span className="text-success opacity-70 font-time text-xs">
+                          <span className="opacity-70 font-time text-xs" style={{ color: 'var(--success-text)' }}>
                             {task.completedAt ? formatRelativeTime(task.completedAt) : 'Done'}
                           </span>
                         </div>
@@ -232,9 +221,7 @@ export const TaskSummaryBar: React.FC<TaskSummaryBarProps> = ({ tasks, isDarkMod
                           key={task.id}
                           className="flex items-center justify-between text-xs p-2 rounded-lg"
                           style={{
-                            backgroundColor: isDarkMode 
-                              ? 'rgba(255, 255, 255, 0.05)' 
-                              : 'rgba(59, 130, 246, 0.05)'
+                            backgroundColor: 'var(--bg-tertiary)'
                           }}
                         >
                           <span className="text-secondary truncate flex-1 mr-2">
@@ -254,9 +241,7 @@ export const TaskSummaryBar: React.FC<TaskSummaryBarProps> = ({ tasks, isDarkMod
               <div 
                 className="mt-3 pt-3 border-t flex justify-center"
                 style={{
-                  borderColor: isDarkMode 
-                    ? 'rgba(255, 255, 255, 0.05)' 
-                    : 'rgba(59, 130, 246, 0.1)'
+                  borderColor: 'var(--border-primary)'
                 }}
               >
                 <div className="text-xs text-tertiary font-medium">

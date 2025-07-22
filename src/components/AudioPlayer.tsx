@@ -1,9 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Volume2, VolumeX, Play, Pause, Music, Brain, Waves } from 'lucide-react';
 
-interface AudioPlayerProps {
-  isDarkMode: boolean;
-}
+interface AudioPlayerProps {}
 
 interface AudioTrack {
   id: string;
@@ -17,7 +15,7 @@ interface AudioTrack {
   audioUrl: string;
 }
 
-export const AudioPlayer: React.FC<AudioPlayerProps> = ({ isDarkMode }) => {
+export const AudioPlayer: React.FC<AudioPlayerProps> = () => {
   const [currentTrack, setCurrentTrack] = useState<AudioTrack | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.7);
@@ -270,19 +268,15 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ isDarkMode }) => {
       <div 
         className="mt-6 p-4 rounded-lg border"
         style={{
-          backgroundColor: isDarkMode 
-            ? 'rgba(34, 197, 94, 0.1)' 
-            : 'rgba(34, 197, 94, 0.05)',
-          borderColor: isDarkMode 
-            ? 'rgba(34, 197, 94, 0.3)' 
-            : 'rgba(34, 197, 94, 0.2)'
+          backgroundColor: 'var(--success-bg)',
+          borderColor: 'var(--success-border)'
         }}
       >
         <div className="flex items-start gap-3">
-          <Volume2 size={18} className="text-green-500 flex-shrink-0 mt-0.5" />
+          <Volume2 size={18} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--success-icon)' }} />
           <div>
             <h4 className="text-primary font-medium text-sm mb-1">How to use</h4>
-            <ul className="text-secondary text-sm leading-relaxed space-y-1">
+            <ul className="text-sm leading-relaxed space-y-1" style={{ color: 'var(--success-text)' }}>
               <li>• Select any audio track to begin background playback</li>
               <li>• Audio loops automatically for continuous focus</li>
               <li>• Adjust volume or mute as needed</li>
@@ -297,15 +291,11 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ isDarkMode }) => {
       <div 
         className="mt-4 p-3 rounded-lg border text-center"
         style={{
-          backgroundColor: isDarkMode 
-            ? 'rgba(59, 130, 246, 0.1)' 
-            : 'rgba(59, 130, 246, 0.05)',
-          borderColor: isDarkMode 
-            ? 'rgba(59, 130, 246, 0.3)' 
-            : 'rgba(59, 130, 246, 0.2)'
+          backgroundColor: 'var(--info-bg)',
+          borderColor: 'var(--info-border)'
         }}
       >
-        <p className="text-secondary text-xs">
+        <p className="text-xs" style={{ color: 'var(--info-text)' }}>
           <strong>Note:</strong> In a production environment, these would be actual audio files. 
           Currently using placeholder audio for demonstration purposes.
         </p>

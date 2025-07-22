@@ -17,11 +17,9 @@ export interface KanbanColumn {
   tasks: KanbanTask[];
 }
 
-interface KanbanBoardProps {
-  isDarkMode: boolean;
-}
+interface KanbanBoardProps {}
 
-export const KanbanBoard: React.FC<KanbanBoardProps> = ({ isDarkMode }) => {
+export const KanbanBoard: React.FC<KanbanBoardProps> = () => {
   const [columns, setColumns] = useState<KanbanColumn[]>([
     {
       id: 'todo',
@@ -383,10 +381,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ isDarkMode }) => {
       {/* Instructions */}
       <div className="glass-card p-6">
         <h3 className="text-lg font-medium text-primary mb-4">How to Use the Kanban Board</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-secondary text-sm leading-relaxed">
           <div>
             <h4 className="text-primary font-medium mb-2">Adding Tasks</h4>
-            <ul className="text-secondary text-sm space-y-1 leading-relaxed">
+            <ul className="space-y-1">
               <li>• Click the + button in any column header</li>
               <li>• Enter a task title and optional description</li>
               <li>• Set the priority level (Low, Medium, High)</li>
@@ -395,7 +393,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ isDarkMode }) => {
           </div>
           <div>
             <h4 className="text-primary font-medium mb-2">Moving Tasks</h4>
-            <ul className="text-secondary text-sm space-y-1 leading-relaxed">
+            <ul className="space-y-1">
               <li>• Drag any task card to move it</li>
               <li>• Drop it in a different column to change status</li>
               <li>• Tasks automatically update their timestamp</li>

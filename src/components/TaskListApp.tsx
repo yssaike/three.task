@@ -8,7 +8,6 @@ import { YouTubePlayer } from './YouTubePlayer';
 import { TaskSummaryBar } from './TaskSummaryBar';
 import { PomodoroScheduler } from './PomodoroScheduler';
 import { AudioPlayer } from './AudioPlayer';
-import { useDarkMode } from '../hooks/useDarkMode';
 
 interface Task {
   id: string;
@@ -26,7 +25,6 @@ export const TaskListApp: React.FC = () => {
   const [emailError, setEmailError] = useState('');
   const [showPomodoroScheduler, setShowPomodoroScheduler] = useState(false);
   const [showKanbanBoard, setShowKanbanBoard] = useState(false);
-  const { isDarkMode, toggleDarkMode } = useDarkMode();
 
   // Handle midnight reset
   const handleMidnight = () => {
@@ -152,11 +150,9 @@ export const TaskListApp: React.FC = () => {
             >
               ← Back to Task List
             </button>
-            
-            <SettingsMenu isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
 
           {/* Pomodoro Scheduler */}
-          <PomodoroScheduler isDarkMode={isDarkMode} />
+          <PomodoroScheduler />
       </>
     );
   }
@@ -178,13 +174,10 @@ export const TaskListApp: React.FC = () => {
             ← Back to Task List
           </button>
           
-          <div className="flex items-start gap-4 mt-4">
-            <SettingsMenu isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
-          </div>
         </div>
 
         {/* Kanban Board */}
-        <KanbanBoard isDarkMode={isDarkMode} />
+        <KanbanBoard />
       </>
     );
   }
@@ -234,12 +227,11 @@ export const TaskListApp: React.FC = () => {
             >
               <Timer size={24} className="text-green-500" />
             </button>
-            <SettingsMenu isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
           </div>
         </div>
 
         {/* Built-in Audio Player */}
-        <AudioPlayer isDarkMode={isDarkMode} />
+        <AudioPlayer />
 
         {/* Task Input Section */}
         <div className="glass-card p-8">
@@ -502,7 +494,7 @@ export const TaskListApp: React.FC = () => {
       </div>
 
       {/* Task Summary Bar - Fixed at bottom */}
-      <TaskSummaryBar tasks={tasks} isDarkMode={isDarkMode} />
+      <TaskSummaryBar tasks={tasks} />
     </>
   );
 };

@@ -20,11 +20,9 @@ interface ScheduleBlock {
   completed: boolean;
 }
 
-interface PomodoroSchedulerProps {
-  isDarkMode: boolean;
-}
+interface PomodoroSchedulerProps {}
 
-export const PomodoroScheduler: React.FC<PomodoroSchedulerProps> = ({ isDarkMode }) => {
+export const PomodoroScheduler: React.FC<PomodoroSchedulerProps> = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [schedule, setSchedule] = useState<ScheduleBlock[]>([]);
   const [currentBlock, setCurrentBlock] = useState<ScheduleBlock | null>(null);
