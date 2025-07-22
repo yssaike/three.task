@@ -177,8 +177,8 @@ export const TaskListApp: React.FC = () => {
   return (
     <>
       {/* Fixed Clock Header */}
-      <div className="sticky top-0 z-20 bg-gradient-to-b from-white/95 to-white/80 dark:from-rich-black-900/95 dark:to-rich-black-900/80 backdrop-blur-md border-b border-primary pb-4 mb-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mb-8" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+        <div className="max-w-6xl mx-auto">
           <Clock onMidnight={handleMidnight} />
         </div>
       </div>
