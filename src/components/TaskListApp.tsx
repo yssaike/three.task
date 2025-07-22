@@ -6,7 +6,6 @@ import { ClockDisplay } from './ClockDisplay';
 import { SettingsMenu } from './SettingsMenu';
 import { YouTubePlayer } from './YouTubePlayer';
 import { TaskSummaryBar } from './TaskSummaryBar';
-import { ColorSystemDemo } from './ColorSystemDemo';
 import { PomodoroScheduler } from './PomodoroScheduler';
 import { AudioPlayer } from './AudioPlayer';
 import { useDarkMode } from '../hooks/useDarkMode';
@@ -25,7 +24,6 @@ export const TaskListApp: React.FC = () => {
   const [emailInput, setEmailInput] = useState('');
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [emailError, setEmailError] = useState('');
-  const [showColorDemo, setShowColorDemo] = useState(false);
   const [showPomodoroScheduler, setShowPomodoroScheduler] = useState(false);
   const [showKanbanBoard, setShowKanbanBoard] = useState(false);
   const { isDarkMode, toggleDarkMode } = useDarkMode();
@@ -155,20 +153,7 @@ export const TaskListApp: React.FC = () => {
               ← Back to Task List
             </button>
             
-            <div className="flex items-start gap-4">
-              <button
-                onClick={() => setShowColorDemo(!showColorDemo)}
-                className="glass-card p-3 hover:scale-105 transition-all duration-300 ease-in-out focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                aria-label="Toggle color system demo"
-                title="Color System Demo"
-              >
-                <Palette size={24} className="text-yinmn-blue-500" />
-              </button>
-              <SettingsMenu isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
-            </div>
-
-          {/* Color System Demo */}
-          {showColorDemo && <ColorSystemDemo />}
+            <SettingsMenu isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
 
           {/* Pomodoro Scheduler */}
           <PomodoroScheduler isDarkMode={isDarkMode} />
@@ -194,20 +179,9 @@ export const TaskListApp: React.FC = () => {
           </button>
           
           <div className="flex items-start gap-4 mt-4">
-            <button
-              onClick={() => setShowColorDemo(!showColorDemo)}
-              className="glass-card p-3 hover:scale-105 transition-all duration-300 ease-in-out focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              aria-label="Toggle color system demo"
-              title="Color System Demo"
-            >
-              <Palette size={24} className="text-yinmn-blue-500" />
-            </button>
             <SettingsMenu isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
           </div>
         </div>
-
-        {/* Color System Demo */}
-        {showColorDemo && <ColorSystemDemo />}
 
         {/* Kanban Board */}
         <KanbanBoard isDarkMode={isDarkMode} />
@@ -260,20 +234,9 @@ export const TaskListApp: React.FC = () => {
             >
               <Timer size={24} className="text-green-500" />
             </button>
-            <button
-              onClick={() => setShowColorDemo(!showColorDemo)}
-              className="glass-card p-3 hover:scale-105 transition-all duration-300 ease-in-out focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              aria-label="Toggle color system demo"
-              title="Color System Demo"
-            >
-              <Palette size={24} className="text-yinmn-blue-500" />
-            </button>
             <SettingsMenu isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
           </div>
         </div>
-
-        {/* Color System Demo */}
-        {showColorDemo && <ColorSystemDemo />}
 
         {/* Built-in Audio Player */}
         <AudioPlayer isDarkMode={isDarkMode} />
