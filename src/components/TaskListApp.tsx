@@ -230,9 +230,6 @@ export const TaskListApp: React.FC = () => {
           </div>
         </div>
 
-        {/* Built-in Audio Player */}
-        <AudioPlayer />
-
         {/* Task Input Section */}
         <div className="glass-card p-8">
           <h2 className="text-2xl font-light text-primary mb-6 flex items-center gap-3">
@@ -268,6 +265,9 @@ export const TaskListApp: React.FC = () => {
             </span>
           </div>
         </div>
+
+        {/* Built-in Audio Player */}
+        <AudioPlayer />
 
         {/* Task List */}
         {tasks.length > 0 && (
