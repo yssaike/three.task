@@ -16,6 +16,7 @@ interface TaskSummaryBarProps {
 export const TaskSummaryBar: React.FC<TaskSummaryBarProps> = ({ tasks }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const isDarkMode = true; // Application operates exclusively in dark mode
 
   // Update time every minute for accurate timestamps
   useEffect(() => {
